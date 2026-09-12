@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم بالسكربت</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 1.5rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .header h2 { color: #38bdf8; font-size: 1.4rem; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 1rem; }
+        .btn { padding: 0.75rem 1.25rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; font-size: 0.95rem; }
+        .btn-start { background: #16a34a; }
+        .btn-stop { background: #dc2626; }
+        .btn-logout { background: #475569; padding: 0.5rem 1rem; font-size: 0.85rem; }
+        #terminal { 
+            background: #000; color: #4ade80; padding: 1rem; height: 380px; 
+            overflow-y: auto; border-radius: 8px; font-family: monospace; 
+            border: 1px solid #334155; white-space: pre-wrap; word-break: break-all; 
+            font-size: 0.85rem; direction: ltr; text-align: left; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>لوحة تشغيل السكربت</h2>
+        <button class="btn btn-logout" onclick="logout()">تسجيل الخروج</button>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-start" onclick="startProcess()">تشغيل الملف</button>
+        <button class="btn btn-stop" onclick="stopProcess()">إيقاف الملف</button>
+    </div>
+
+    <div id="terminal">--- Terminal Ready ---</div>
+</div>
+
+<script>
+    if (localStorage.getItem('adminLoggedIn') !== 'true') {
+        window.location.href = 'index.html';
+    }
+
+    const socket = io();
+    const terminal = document.getElementById('terminal');
+
+    function startProcess() {
+        socket.emit('start-script');
+    }
+
+    function stopProcess() {
+        socket.emit('stop-script');
+    }
+
+    function logout() {
+        localStorage.removeItem('adminLoggedIn');
+        window.location.href = 'index.html';
+    }
+
+    // استقبال مخرجات البايثون فورياً من السيرفر
+    socket.on('output', (data) => {
+        terminal.innerText += data;
+        terminal.scrollTop = terminal.scrollHeight;
+    });
+</script>
+
+</body>
+</html>
